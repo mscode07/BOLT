@@ -46,7 +46,6 @@ app.post("/template", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         // const genratedCode = (codeResponse.content[0] as TextBlock).text;
         res.json({
             techByUser,
-            code: codeResponse,
         });
     }
     catch (error) {
