@@ -21,6 +21,7 @@ const app = (0, express_1.default)();
 app.use(express_1.default.json());
 const anthropic = new sdk_1.default();
 app.post("/template", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("Request body: ", req.body.prompt);
     const usreRequest = req.body.prompt;
     try {
         const response = yield anthropic.messages.create({
@@ -33,19 +34,22 @@ app.post("/template", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         console.log(`Detectec tech :${techByUser}`);
         const basePromt = basePrompts_1.promptMap[techByUser] || basePrompts_1.defaultPrompt;
         const userMessage = `${basePromt}\n\nUser Request: ${usreRequest}`;
-        const codeResponse = yield anthropic.messages
-            .stream({
+        const codeResponse = yield anthropic.messages.create({
             messages: [{ role: "user", content: userMessage }],
             model: "claude-3-7-sonnet-20250219",
             max_tokens: 4096,
             system: (0, prompts_1.getSystemPrompt)(),
-        })
-            .on("text", (text) => {
-            console.log(text);
         });
+        // .on("text", (text) => {
+        //   console.log(text);
+        // });
         // const genratedCode = (codeResponse.content[0] as TextBlock).text;
+        // const genratedCode = await codeResponse;
+        const genratedCode = codeResponse.content[0].text;
+        console.log("Genrated code: ", genratedCode);
         res.json({
             techByUser,
+            genratedCode,
         });
     }
     catch (error) {

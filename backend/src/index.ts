@@ -12,6 +12,7 @@ app.use(express.json());
 const anthropic = new Anthropic();
 
 app.post("/template", async (req, res) => {
+  console.log("Request body: ", req.body.prompt);
   const usreRequest = req.body.prompt;
   try {
     const response = await anthropic.messages.create({
@@ -28,20 +29,23 @@ app.post("/template", async (req, res) => {
 
     const userMessage = `${basePromt}\n\nUser Request: ${usreRequest}`;
 
-    const codeResponse = await anthropic.messages
-      .stream({
-        messages: [{ role: "user", content: userMessage }],
-        model: "claude-3-7-sonnet-20250219",
-        max_tokens: 4096,
-        system: getSystemPrompt(),
-      })
-      .on("text", (text) => {
-        console.log(text);
-      });
+    const codeResponse = await anthropic.messages.create({
+      messages: [{ role: "user", content: userMessage }],
+      model: "claude-3-7-sonnet-20250219",
+      max_tokens: 4096,
+      system: getSystemPrompt(),
+    });
+    // .on("text", (text) => {
+    //   console.log(text);
+    // });
     // const genratedCode = (codeResponse.content[0] as TextBlock).text;
+    // const genratedCode = await codeResponse;
+    const genratedCode = (codeResponse.content[0] as TextBlock).text;
+    console.log("Genrated code: ", genratedCode);
 
     res.json({
       techByUser,
+      genratedCode,
     });
   } catch (error) {
     console.log("Getting error here ", error);
