@@ -6,9 +6,11 @@ import { BASE_PROMPT, getSystemPrompt } from "./prompts";
 import { nextBasePrompt } from "./defaluts/nextJs";
 import { defaultPrompt, promptMap } from "./defaluts/basePrompts";
 import { text } from "stream/consumers";
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 const anthropic = new Anthropic();
 
 app.post("/template", async (req, res) => {

@@ -4,6 +4,8 @@ import { usePromptStore } from "../store/promptStore";
 import { Code, Sparkles, Moon, Sun } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { cn } from "../utils/cn";
+import axios from "axios";
+import { BACKEND_URL } from "../config";
 
 export default function LandingPage() {
   const [promptText, setPromptText] = useState("");
@@ -12,24 +14,23 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
 
-  const handlePromptSubmit = (e: React.FormEvent) => {
+  const handlePromptSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // if (!promptText.trim()) return;
 
-    // setIsLoading(true);
-
-    // // Store the prompt and simulate generation
-    // setPrompt(promptText);
-
-    // // Simulate processing time then navigate to editor
-    // setTimeout(() => {
-    //   setIsLoading(false);
-    //   navigate("/editor");
-    // }, 1500);
     if (promptText.trim()) {
       setIsLoading(true);
       setPrompt(promptText);
-      navigate("/editor", { state: { promptText } });
+
+      try {
+        const response = await axios.post(`${BACKEND_URL}/template`, {
+          prompt: promptText,
+        });
+        const data = response.data;
+        console.log(response, "This is the response from the backend");
+        navigate("/editor", { state: { promptText, data } });
+      } catch (error) {
+        console.error("Error submitting prompt:", error);
+      }
     }
   };
 

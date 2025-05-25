@@ -1,14 +1,12 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePromptStore } from "../store/promptStore";
 import Editor from "../components/editor/Editor";
-import StepsSidebar from "../components/steps/StepsSidebar";
 import FileExplorer from "../components/files/FileExplorer";
 import Header from "../components/layout/Header";
 import Statusbar from "../components/layout/Statusbar";
+import StepsSidebar from "../components/steps/StepsSidebar";
 import { useTheme } from "../contexts/ThemeContext";
-import axios from "axios";
-import { BACKEND_URL } from "../congig";
+import { usePromptStore } from "../store/promptStore";
 
 export default function EditorPage() {
   const {
@@ -16,7 +14,7 @@ export default function EditorPage() {
     currentFile,
     setCurrentFile,
     fileStructure,
-    sdteps,
+    steps,
     currentStepId,
     isGenerating,
   } = usePromptStore();
@@ -25,17 +23,14 @@ export default function EditorPage() {
   const { theme } = useTheme();
   const [previewVisible, setPreviewVisible] = useState(false);
 
-  // If no prompt is set, redirect to landing page
   useEffect(() => {
     if (!prompt) {
       navigate("/");
     }
   }, [prompt, navigate]);
 
-  // When file structure changes, select the first file by default if none is selected
   useEffect(() => {
     if (!currentFile && fileStructure.length > 0) {
-      // Find the first file (not folder)
       const findFirstFile = (
         nodes: typeof fileStructure
       ): typeof currentFile => {
@@ -60,18 +55,6 @@ export default function EditorPage() {
   // Get current step
   const currentStep =
     steps.find((step) => step.id === currentStepId) || steps[0];
-
-  async function init() {
-    const response = await axios.post(`${BACKEND_URL}/template`, {
-      prompt: prompt?.text,
-    });
-    console.log(response.data, "This is the init response.");
-  }
-
-  useEffect(() => {
-    init();
-  }, []);
-
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-dark-200 text-gray-900 dark:text-gray-100">
       <Header
