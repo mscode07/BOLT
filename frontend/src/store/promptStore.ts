@@ -19,7 +19,7 @@ interface Step {
   id: number;
   title: string;
   description: string;
-  status: "pending" | "in-progress" | "completed";
+  status: "completed"; //"pending" | "in-progress" |
   code?: string;
 }
 
@@ -45,80 +45,16 @@ interface PromptState {
   reset: () => void;
 }
 
-// Mock initial data for development purposes
-const mockFileStructure: FileNode[] = [
-  {
-    id: "1",
-    name: "src",
-    type: "folder",
-    path: "/src",
-    children: [
-      {
-        id: "2",
-        name: "App.js",
-        type: "file",
-        content:
-          "function App() {\n  return <div>Hello World</div>;\n}\n\nexport default App;",
-        language: "javascript",
-        path: "/src/App.js",
-      },
-      {
-        id: "3",
-        name: "index.js",
-        type: "file",
-        content:
-          "import React from 'react';\nimport ReactDOM from 'react-dom';\nimport App from './App';\n\nReactDOM.render(<App />, document.getElementById('root'));",
-        language: "javascript",
-        path: "/src/index.js",
-      },
-    ],
-  },
-  {
-    id: "4",
-    name: "package.json",
-    type: "file",
-    content:
-      '{\n  "name": "example-app",\n  "version": "0.1.0",\n  "private": true\n}',
-    language: "json",
-    path: "/package.json",
-  },
-];
+const FileStructure: FileNode[] = [];
 
-const mockSteps: Step[] = [
-  {
-    id: 1,
-    title: "Initialize Project",
-    description:
-      "Set up the basic project structure with React and necessary dependencies.",
-    status: "completed",
-  },
-  {
-    id: 2,
-    title: "Create Components",
-    description:
-      "Build the core components for the application based on the requirements.",
-    status: "in-progress",
-  },
-  {
-    id: 3,
-    title: "Implement Styling",
-    description: "Add CSS styling to make the application visually appealing.",
-    status: "pending",
-  },
-  {
-    id: 4,
-    title: "Add Functionality",
-    description: "Implement the core functionality for the application.",
-    status: "pending",
-  },
-];
+const Steps: Step[] = [];
 
 export const usePromptStore = create<PromptState>((set) => ({
   prompt: null,
-  fileStructure: mockFileStructure, // Using mock data for now
+  fileStructure: FileStructure,
   currentFile: null,
-  steps: mockSteps, // Using mock steps for now
-  currentStepId: 2, // Start with the second step active
+  steps: Steps,
+  currentStepId: 2,
   isGenerating: false,
 
   setPrompt: (text: string) =>

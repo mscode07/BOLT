@@ -17,8 +17,10 @@ const sdk_1 = __importDefault(require("@anthropic-ai/sdk"));
 const express_1 = __importDefault(require("express"));
 const prompts_1 = require("./prompts");
 const basePrompts_1 = require("./defaluts/basePrompts");
+const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
+app.use((0, cors_1.default)());
 const anthropic = new sdk_1.default();
 app.post("/template", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("Request body: ", req.body.prompt);
