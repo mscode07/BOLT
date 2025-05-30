@@ -15,11 +15,11 @@ export interface FileNode {
   path: string;
 }
 
-interface Step {
+export interface Step {
   id: number;
   title: string;
   description: string;
-  status: "completed"; //"pending" | "in-progress" |
+  status: "completed" | "pending" | "in-progress";
   code?: string;
 }
 
@@ -31,7 +31,6 @@ interface PromptState {
   currentStepId: number | null;
   isGenerating: boolean;
 
-  // Actions
   setPrompt: (text: string) => void;
   setFileStructure: (files: FileNode[]) => void;
   setCurrentFile: (file: FileNode | null) => void;

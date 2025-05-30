@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Editor from "../components/editor/Editor";
 import FileExplorer from "../components/files/FileExplorer";
 import Header from "../components/layout/Header";
@@ -19,6 +19,10 @@ export default function EditorPage() {
     isGenerating,
   } = usePromptStore();
 
+  const location = useLocation();
+  const { code } = location.state || {};
+  // console.log(code.genratedCode, "This is the data");
+
   const navigate = useNavigate();
   const { theme } = useTheme();
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -30,6 +34,7 @@ export default function EditorPage() {
   }, [prompt, navigate]);
 
   useEffect(() => {
+    9;
     if (!currentFile && fileStructure.length > 0) {
       const findFirstFile = (
         nodes: typeof fileStructure
@@ -58,7 +63,7 @@ export default function EditorPage() {
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-dark-200 text-gray-900 dark:text-gray-100">
       <Header
-        projectName={prompt?.text.slice(0, 30) || "Untitled Project"}
+        projectName={code?.genratedCode?.slice(0, 30) || "Untitled Project"}
         previewVisible={previewVisible}
         togglePreview={() => setPreviewVisible(!previewVisible)}
       />
@@ -92,7 +97,6 @@ export default function EditorPage() {
               </div>
             )}
 
-            {/* Preview Panel (conditionally rendered) */}
             {previewVisible && (
               <div className="absolute inset-0 bg-white p-4 overflow-auto animate-fade-in z-10">
                 <div className="p-2 bg-gray-100 rounded mb-4 flex justify-between items-center">
@@ -105,7 +109,6 @@ export default function EditorPage() {
                   </button>
                 </div>
                 <div className="border rounded-md h-[calc(100%-3rem)] overflow-auto">
-                  {/* This would be an iframe in a real implementation */}
                   <div className="p-4">
                     <p className="text-center text-gray-500 italic">
                       Preview would be rendered here

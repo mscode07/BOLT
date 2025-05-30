@@ -1,12 +1,6 @@
-import { useEffect, useState } from "react";
 import MonacoEditor from "@monaco-editor/react";
-import { usePromptStore } from "../../store/promptStore";
-import { FileNode } from "../../store/promptStore";
-import { useLocation } from "react-router-dom";
-
-const location = useLocation();
-const { data } = location.state || {};
-console.log(data, "This is the data from the landing page");
+import { useEffect, useState } from "react";
+import { FileNode, usePromptStore } from "../../store/promptStore";
 
 interface EditorProps {
   file: FileNode;
@@ -52,7 +46,6 @@ export default function Editor({ file, theme }: EditorProps) {
     const newValue = value || "";
     setValue(newValue);
 
-    // Debounce update to store
     const timeoutId = setTimeout(() => {
       updateFileContent(file.id, newValue);
     }, 500);
