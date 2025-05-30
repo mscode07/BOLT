@@ -8,6 +8,11 @@ import StepsSidebar from "../components/steps/StepsSidebar";
 import { useTheme } from "../contexts/ThemeContext";
 import { usePromptStore } from "../store/promptStore";
 
+/**
+ * Renders the main code editor page with file navigation, step tracking, and preview functionality.
+ *
+ * Displays the project header, steps sidebar, file explorer, code editor, and an optional preview panel. Redirects to the home page if no prompt is present. Automatically selects the first file in the file structure if none is selected.
+ */
 export default function EditorPage() {
   const {
     prompt,

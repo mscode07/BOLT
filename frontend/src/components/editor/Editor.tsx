@@ -7,6 +7,17 @@ interface EditorProps {
   theme: "vs-dark" | "vs";
 }
 
+/**
+ * Renders a code editor interface for the specified file with syntax highlighting and theme support.
+ *
+ * The editor displays the file's name, allows editing its content, and automatically updates the global store after changes with a debounce delay.
+ *
+ * @param file - The file to be edited, including its name, content, and optional language.
+ * @param theme - The editor theme, either "vs-dark" or "vs".
+ *
+ * @remark
+ * Content updates to the global store are debounced by 500ms to reduce unnecessary updates during rapid typing.
+ */
 export default function Editor({ file, theme }: EditorProps) {
   const { updateFileContent } = usePromptStore();
   const [value, setValue] = useState(file.content || "");

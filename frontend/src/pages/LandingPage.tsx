@@ -8,6 +8,13 @@ import axios from "axios";
 import { BACKEND_URL } from "../config";
 import { parseBoltArtifact } from "../ParseResponse";
 
+/**
+ * Renders the landing page for the AI-powered website generator, allowing users to describe a website and generate its code.
+ *
+ * Handles user input, submits prompts to the backend AI service, processes and validates the response to extract code artifacts, updates global state with the generated file structure and steps, and navigates to the editor interface. Also provides theme toggling and responsive UI feedback during generation.
+ *
+ * @remark Throws an error if the backend response does not contain a valid `<boltArtifact>` code artifact or if the response structure is invalid.
+ */
 export default function LandingPage() {
   const [promptText, setPromptText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
