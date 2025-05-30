@@ -6,11 +6,13 @@ import { useTheme } from "../contexts/ThemeContext";
 import { cn } from "../utils/cn";
 import axios from "axios";
 import { BACKEND_URL } from "../config";
+import { parseBoltArtifact } from "../ParseResponse";
 
 export default function LandingPage() {
   const [promptText, setPromptText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { setPrompt } = usePromptStore();
+  const { setPrompt, setIsGenerating, setFileStructure, setSteps } =
+    usePromptStore();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
 
@@ -19,15 +21,71 @@ export default function LandingPage() {
 
     if (promptText.trim()) {
       setIsLoading(true);
-      setPrompt(promptText);
-
+      setIsGenerating(true);
       try {
         const response = await axios.post(`${BACKEND_URL}/template`, {
           prompt: promptText,
         });
-        const data = response.data;
-        console.log(response, "This is the response from the backend");
-        navigate("/editor", { state: { promptText, data } });
+        let artifactString: string;
+
+        if (typeof response.data === "object" && response.data) {
+          if (typeof response.data.genratedCode === "string") {
+            artifactString = response.data.genratedCode;
+          } else if (
+            response.data.data &&
+            typeof response.data.data.genratedCode === "string"
+          ) {
+            artifactString = response.data.data.genratedCode;
+          } else {
+            throw new Error(
+              "Invalid response structure: 'code' field not found in response.data"
+            );
+          }
+
+          if (
+            !artifactString.includes("<boltArtifact") &&
+            !artifactString.includes("<BoltArtifact")
+          ) {
+            throw new Error(
+              "Extracted artifact string does not contain <boltArtifact>"
+            );
+          }
+        } else if (typeof response.data === "string") {
+          const artifactMatch = response.data.match(
+            /<boltArtifact[^>]*>[\s\S]*<\/boltArtifact>/
+          );
+          if (!artifactMatch) {
+            throw new Error("No <boltArtifact> found in response string");
+          }
+          artifactString = artifactMatch[0];
+        } else {
+          throw new Error(
+            "Invalid response type: response.data must be a string or object"
+          );
+        }
+
+        console.log("Extracted artifactString:", artifactString);
+
+        const artifactMatch = artifactString.match(
+          /<boltArtifact[^>]*>[\s\S]*<\/boltArtifact>/
+        );
+        if (!artifactMatch) {
+          throw new Error(
+            "Failed to clean artifactString: No <boltArtifact> found"
+          );
+        }
+        const cleanedArtifactString = artifactMatch[0];
+        console.log("Cleaned artifactString:", cleanedArtifactString);
+
+        const code = response.data;
+        setPrompt(promptText);
+        const { files, steps } = parseBoltArtifact(cleanedArtifactString);
+        console.log("Files stucture is here", files);
+        console.log("Steps are  here", steps);
+
+        setFileStructure(files);
+        setSteps(steps);
+        navigate("/editor", { state: { promptText, code } }); //?, { state: { promptText, data } }
       } catch (error) {
         console.error("Error submitting prompt:", error);
       }
@@ -36,7 +94,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
       <header className="w-full py-4 px-6 flex justify-between items-center bg-white dark:bg-dark-200 border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center space-x-2">
           <Code className="h-6 w-6 text-primary-600" />
@@ -58,7 +115,6 @@ export default function LandingPage() {
         </button>
       </header>
 
-      {/* Hero Section */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl w-full space-y-8 text-center">
           <div className="space-y-2 animate-slide-up">
@@ -134,7 +190,7 @@ export default function LandingPage() {
             className="mt-12 grid gap-8 sm:grid-cols-3 animate-fade-in"
             style={{ animationDelay: "200ms" }}
           >
-            {features.map((feature, index) => (
+            {/* {features.map((feature, index) => (
               <div
                 key={index}
                 className="p-6 bg-white dark:bg-dark-100 rounded-lg shadow-md"
@@ -149,7 +205,7 @@ export default function LandingPage() {
                   {feature.description}
                 </p>
               </div>
-            ))}
+            ))} */}
           </div>
         </div>
       </main>
