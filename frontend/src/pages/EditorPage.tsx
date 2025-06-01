@@ -21,17 +21,16 @@ export default function EditorPage() {
 
   const location = useLocation();
   const { code } = location.state || {};
-  // console.log(code.genratedCode, "This is the data");
 
   const navigate = useNavigate();
   const { theme } = useTheme();
   const [previewVisible, setPreviewVisible] = useState(false);
 
   useEffect(() => {
-    if (!prompt) {
+    if (!prompt || (!isGenerating && steps.length === 0)) {
       navigate("/");
     }
-  }, [prompt, navigate]);
+  }, [prompt, isGenerating, steps, navigate]);
 
   useEffect(() => {
     9;

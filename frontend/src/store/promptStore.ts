@@ -103,7 +103,6 @@ export const usePromptStore = create<PromptState>((set) => ({
         return { fileStructure: [...state.fileStructure, newNode] };
       }
 
-      // Helper to recursively add file to the correct folder
       const addToFolder = (files: FileNode[]): FileNode[] => {
         return files.map((file) => {
           if (file.type === "folder" && file.path === parentPath) {
