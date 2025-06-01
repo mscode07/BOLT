@@ -6,7 +6,7 @@ interface Step {
   id: number;
   title: string;
   description: string;
-  status: "completed"; //'pending' | 'in-progress' |
+  status: "pending" | "in-progress" | "completed";
 }
 
 interface StepsSidebarProps {
@@ -23,7 +23,9 @@ export default function StepsSidebar({
   const { setCurrentStepId, completeStep } = usePromptStore();
 
   const handleStepClick = (step: Step) => {
-    if (step.status !== "completed") {
+    console.log(step.id, "This is the step's id");
+    if (step.status !== "pending") {
+      console.log(currentStepId, "This is the current step id");
       setCurrentStepId(step.id);
     }
   };
@@ -49,7 +51,7 @@ export default function StepsSidebar({
                 key={step.id}
                 className={cn(
                   "relative pl-8 pr-4 py-3 rounded-md cursor-pointer transition-colors",
-                  step.status === "completed"
+                  step.status === "pending"
                     ? "opacity-50 cursor-not-allowed"
                     : "",
                   step.id === currentStepId
@@ -75,7 +77,7 @@ export default function StepsSidebar({
                   </span>
                 </div>
 
-                {step.status === "completed" && (
+                {step.status === "in-progress" && (
                   <button
                     className="mt-2 text-xs px-2 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
                     onClick={(e) => {

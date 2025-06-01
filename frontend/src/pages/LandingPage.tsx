@@ -28,6 +28,8 @@ export default function LandingPage() {
         });
         let artifactString: string;
 
+        console.log(response.data, "This is the response");
+
         if (typeof response.data === "object" && response.data) {
           if (typeof response.data.genratedCode === "string") {
             artifactString = response.data.genratedCode;
@@ -64,7 +66,7 @@ export default function LandingPage() {
           );
         }
 
-        console.log("Extracted artifactString:", artifactString);
+        //console.log("Extracted artifactString:", artifactString);
 
         const artifactMatch = artifactString.match(
           /<boltArtifact[^>]*>[\s\S]*<\/boltArtifact>/
@@ -75,19 +77,24 @@ export default function LandingPage() {
           );
         }
         const cleanedArtifactString = artifactMatch[0];
-        console.log("Cleaned artifactString:", cleanedArtifactString);
+        //console.log("Cleaned artifactString:", cleanedArtifactString);
 
         const code = response.data;
         setPrompt(promptText);
         const { files, steps } = parseBoltArtifact(cleanedArtifactString);
-        console.log("Files stucture is here", files);
-        console.log("Steps are  here", steps);
+        // console.log("Files stucture is here", files);
+        // console.log("Steps are  here", steps);
 
         setFileStructure(files);
         setSteps(steps);
         navigate("/editor", { state: { promptText, code } }); //?, { state: { promptText, data } }
       } catch (error) {
         console.error("Error submitting prompt:", error);
+        setIsGenerating(false);
+        setIsLoading(false);
+      } finally {
+        setIsGenerating(false);
+        setIsLoading(false);
       }
     }
   };

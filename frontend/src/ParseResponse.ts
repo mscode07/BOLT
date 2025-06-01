@@ -3,7 +3,7 @@ import { FileNode, Step } from "./store/promptStore";
 export const parseBoltArtifact = (
   artifactString: string
 ): { files: FileNode[]; steps: Step[] } => {
-  console.log("Reaching here >>>>>>");
+  // console.log("Reaching here >>>>>>");
   if (
     !artifactString ||
     typeof artifactString !== "string" ||
@@ -43,12 +43,12 @@ export const parseBoltArtifact = (
       const newTag = `<boltAction type="${type}"${
         filePath ? ` filePath="${filePath}"` : ""
       }><![CDATA[${content}]]></boltAction>`;
-      console.log(`Transformed <boltAction>: ${newTag}`);
+      // console.log(`Transformed <boltAction>: ${newTag}`);
       return newTag;
     }
   );
 
-  console.log("Processed artifactString with CDATA:", processedString);
+  //console.log("Processed artifactString with CDATA:", processedString);
 
   try {
     const parser = new DOMParser();
@@ -60,7 +60,7 @@ export const parseBoltArtifact = (
       return { files: [], steps: [] };
     }
 
-    console.log("Parsed XML document:", doc.documentElement.outerHTML);
+    //console.log("Parsed XML document:", doc.documentElement.outerHTML);
 
     let boltActions = Array.from(doc.querySelectorAll("*|boltAction"));
 
@@ -72,7 +72,7 @@ export const parseBoltArtifact = (
     }
 
     console.log("Found boltActions:", boltActions);
-    console.log("boltActions length:", boltActions.length);
+    // console.log("boltActions length:", boltActions.length);
 
     const artifactTitle =
       doc.querySelector("*|boltArtifact")?.getAttribute("title") ||
