@@ -23,9 +23,9 @@ export default function StepsSidebar({
   const { setCurrentStepId, completeStep } = usePromptStore();
 
   const handleStepClick = (step: Step) => {
-    console.log(step.id, "This is the step's id");
+    // console.log(step.id, "This is the step's id");
     if (step.status !== "pending") {
-      console.log(currentStepId, "This is the current step id");
+      // console.log(currentStepId, "This is the current step id");
       setCurrentStepId(step.id);
     }
   };

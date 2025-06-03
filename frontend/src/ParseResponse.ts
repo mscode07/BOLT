@@ -4,6 +4,7 @@ export const parseBoltArtifact = (
   artifactString: string
 ): { files: FileNode[]; steps: Step[] } => {
   // console.log("Reaching here >>>>>>");
+  console.log("Input artifactString:", artifactString);
   if (
     !artifactString ||
     typeof artifactString !== "string" ||
@@ -106,7 +107,7 @@ export const parseBoltArtifact = (
       const id = Math.random().toString(36).substring(2, 9);
 
       if (segments.length === 1) {
-        return {
+        const fileNode: FileNode = {
           id,
           name: segments[0],
           type: "file",
@@ -114,11 +115,13 @@ export const parseBoltArtifact = (
           language: getLanguage(segments[0]),
           path: `/${segments[0]}`,
         };
+        files.push(fileNode); // Add top-level file to files array
+        return fileNode;
       }
 
       const folderName = segments[0];
       const subPath = segments.slice(1).join("/");
-      let existingFolder = files.find(
+      const existingFolder = files.find(
         (f) => f.name === folderName && f.type === "folder"
       );
 
@@ -158,10 +161,8 @@ export const parseBoltArtifact = (
           return;
         }
 
-        // Add file to structure
-        const fileNode = addToFileStructure(filePath, content);
+        addToFileStructure(filePath, content);
 
-        // Track public files for step grouping
         if (filePath.startsWith("public/")) {
           publicFiles.push(filePath);
         } else {
@@ -191,7 +192,6 @@ export const parseBoltArtifact = (
       }
     });
 
-    // Add a single step for all public files
     if (publicFiles.length > 0) {
       steps.push({
         id: stepId++,
@@ -218,119 +218,11 @@ export const parseBoltArtifact = (
     // Sort files alphabetically
     uniqueFiles.sort((a, b) => a.name.localeCompare(b.name));
 
+    console.log("Parsed files:", uniqueFiles);
+
     return { files: uniqueFiles, steps };
   } catch (error) {
     console.error("Error parsing <boltArtifact>:", error);
     return { files: [], steps: [] };
   }
-  // const parser = new DOMParser();
-  // const doc = parser.parseFromString(artifactString, "text/xml");
-  // console.log("Getting data after parsing", doc);
-
-  // const parserError = doc.querySelector("parsererror");
-  // if (parserError) {
-  //   console.error("XML parsing error:", parserError.textContent);
-  //   return { files: [], steps: [] };
-  // }
-
-  // console.log("Parsed XML document:", doc.documentElement.outerHTML);
-
-  // let boltActions = Array.from(doc.querySelectorAll("*|boltAction"));
-
-  // if (boltActions.length === 0) {
-  //   boltActions = Array.from(
-  //     doc.querySelectorAll("*|BoltAction, *|boltaction")
-  //   );
-  //   console.warn("Tried fallback query for case sensitivity");
-  // }
-
-  // console.log("Found boltActions:", boltActions);
-  // console.log("boltActions length:", boltActions.length);
-
-  // const artifactTitle =
-  //   doc.querySelector("boltArtifact")?.getAttribute("title") ||
-  //   "Generated Project";
-
-  // const files: FileNode[] = [];
-  // const steps: Step[] = [];
-  // let stepId = 1;
-
-  // const getLanguage = (filePath: string): string => {
-  //   const extension = filePath.split(".").pop()?.toLowerCase();
-  //   switch (extension) {
-  //     case "js":
-  //       return "javascript";
-  //     case "html":
-  //       return "html";
-  //     case "css":
-  //       return "css";
-  //     case "json":
-  //       return "json";
-  //     default:
-  //       return "text";
-  //   }
-  // };
-
-  // const addToFileStructure = (filePath: string, content: string): FileNode => {
-  //   const segments = filePath.split("/").filter(Boolean);
-  //   const id = Math.random().toString(36).substring(2, 9);
-  //   if (segments.length === 1) {
-  //     return {
-  //       id,
-  //       name: segments[0],
-  //       type: "file",
-  //       content,
-  //       language: getLanguage(segments[0]),
-  //       path: `/${segments[0]}`,
-  //     };
-  //   }
-  //   const folderName = segments[0];
-  //   const subPath = segments.slice(1).join("/");
-  //   const existingFolder = files.find(
-  //     (f) => f.name === folderName && f.type === "folder"
-  //   );
-  //   const childNode = addToFileStructure(subPath, content);
-  //   if (existingFolder) {
-  //     existingFolder.children = [...(existingFolder.children || []), childNode];
-  //     return existingFolder;
-  //   } else {
-  //     return {
-  //       id: Math.random().toString(36).substring(2, 9),
-  //       name: folderName,
-  //       type: "folder",
-  //       path: `/${folderName}`,
-  //       children: [childNode],
-  //     };
-  //   }
-  // };
-
-  // // Process boltActions
-  // boltActions.forEach((action) => {
-  //   const type = action.getAttribute("type");
-  //   if (type === "file") {
-  //     const filePath = action.getAttribute("filePath") || "";
-  //     const content = action.textContent || "";
-  //     const fileNode = addToFileStructure(filePath, content);
-  //     if (!files.some((f) => f.path === fileNode.path)) {
-  //       files.push(fileNode);
-  //     }
-  //     const fileStepTitle = filePath.includes("index.html")
-  //       ? "Create Testing Page"
-  //       : `Create ${filePath.split("/").pop()}`;
-  //     steps.push({
-  //       id: stepId++,
-  //       title: fileStepTitle,
-  //       description: `Set up ${filePath} for the ${artifactTitle.toLowerCase()}`,
-  //       status: "completed",
-  //     });
-  //   } else if (type === "shell") {
-  //     const commands = action.textContent || "";
-  //     steps.push({
-  //       id: stepId++,
-  //       title: "Install Dependencies and Start Server",
-  //       description: `Run \`${commands}\` to set up and start the ${artifactTitle.toLowerCase()}`,
-  //       status: "completed",
-  //     });
-  //   }
-  // });
 };

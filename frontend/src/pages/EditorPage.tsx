@@ -22,18 +22,19 @@ export default function EditorPage() {
   const location = useLocation();
   const { code } = location.state || {};
 
+  // console.log("Steps from the store", steps);
+
   const navigate = useNavigate();
   const { theme } = useTheme();
   const [previewVisible, setPreviewVisible] = useState(false);
 
   useEffect(() => {
-    if (!prompt || (!isGenerating && steps.length === 0)) {
+    if (!prompt) {
       navigate("/");
     }
-  }, [prompt, isGenerating, steps, navigate]);
+  }, [prompt, navigate]);
 
   useEffect(() => {
-    9;
     if (!currentFile && fileStructure.length > 0) {
       const findFirstFile = (
         nodes: typeof fileStructure
@@ -56,7 +57,6 @@ export default function EditorPage() {
     }
   }, [fileStructure, currentFile, setCurrentFile]);
 
-  // Get current step
   const currentStep =
     steps.find((step) => step.id === currentStepId) || steps[0];
   return (

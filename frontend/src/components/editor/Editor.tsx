@@ -56,7 +56,7 @@ export default function Editor({ file, theme }: EditorProps) {
   return (
     <div className="flex-1 overflow-hidden">
       <div className="h-9 px-4 flex items-center bg-gray-100 dark:bg-dark-100 border-b border-gray-200 dark:border-gray-800">
-        <span className="text-sm font-medium truncate">{file.name}</span>
+        <span className="text-sm font-medium truncate">{file.name} X</span>
       </div>
 
       <div className="h-[calc(100%-2.25rem)]">
