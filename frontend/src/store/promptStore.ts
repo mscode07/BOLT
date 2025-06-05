@@ -19,21 +19,23 @@ export interface Step {
   id: number;
   title: string;
   description: string;
-  status: "completed" | "pending" | "in-progress";
+  status: "pending" | "in-progress" | "completed";
   code?: string;
 }
 
 interface PromptState {
   prompt: Prompt | null;
   fileStructure: FileNode[];
-  currentFile: FileNode | null;
+  // currentFile: FileNode | null;
   steps: Step[];
+  openFiles: FileNode[];
+  activeFile: FileNode | null;
   currentStepId: number | null;
   isGenerating: boolean;
 
   setPrompt: (text: string) => void;
   setFileStructure: (files: FileNode[]) => void;
-  setCurrentFile: (file: FileNode | null) => void;
+  // setCurrentFile: (file: FileNode | null) => void;
   setSteps: (steps: Step[]) => void;
   setCurrentStepId: (id: number | null) => void;
   updateFileContent: (id: string, content: string) => void;
@@ -41,6 +43,9 @@ interface PromptState {
   deleteFile: (id: string) => void;
   setIsGenerating: (isGenerating: boolean) => void;
   completeStep: (id: number) => void;
+  openFile: (file: FileNode) => void;
+  setActiveFile: (file: FileNode | null) => void;
+  closeFile: (fileId: string) => void;
   reset: () => void;
 }
 
@@ -51,8 +56,10 @@ const Steps: Step[] = [];
 export const usePromptStore = create<PromptState>((set) => ({
   prompt: null,
   fileStructure: FileStructure,
-  currentFile: null,
+  // currentFile: null,
   steps: Steps,
+  openFiles: [],
+  activeFile: null,
   currentStepId: 2,
   isGenerating: false,
 
@@ -64,34 +71,62 @@ export const usePromptStore = create<PromptState>((set) => ({
 
   setFileStructure: (files: FileNode[]) => set({ fileStructure: files }),
 
-  setCurrentFile: (file: FileNode | null) => set({ currentFile: file }),
+  // setCurrentFile: (file: FileNode | null) => set({ currentFile: file }),
 
   setSteps: (steps: Step[]) => set({ steps }),
 
+  openFile: (file) => {
+    set((state) => {
+      const isAlreadyOpen = state.openFiles.some((f) => f.id === file.id);
+      return {
+        openFiles: isAlreadyOpen ? state.openFiles : [...state.openFiles, file],
+        activeFile: file,
+      };
+    });
+  },
+  setActiveFile: (file) => set({ activeFile: file }),
+  closeFile: (fileId) => {
+    set((state) => {
+      const newOpenFiles = state.openFiles.filter((f) => f.id !== fileId);
+      let newActiveFile = state.activeFile;
+      if (state.activeFile?.id === fileId) {
+        // If closing the active file, set activeFile to the last open file or null
+        newActiveFile =
+          newOpenFiles.length > 0
+            ? newOpenFiles[newOpenFiles.length - 1]
+            : null;
+      }
+      return {
+        openFiles: newOpenFiles,
+        activeFile: newActiveFile,
+      };
+    });
+  },
   setCurrentStepId: (id: number | null) => set({ currentStepId: id }),
 
-  updateFileContent: (id: string, content: string) =>
-    set((state) => {
-      const updateContent = (files: FileNode[]): FileNode[] => {
-        return files.map((file) => {
-          if (file.id === id) {
-            return { ...file, content };
-          }
-          if (file.children) {
-            return { ...file, children: updateContent(file.children) };
-          }
-          return file;
-        });
-      };
+  updateFileContent: (fileId, content) => {
+    const updateFile = (nodes: FileNode[]): FileNode[] =>
+      nodes.map((node) => {
+        if (node.id === fileId) {
+          return { ...node, content };
+        }
+        if (node.children) {
+          return { ...node, children: updateFile(node.children) };
+        }
+        return node;
+      });
 
-      return {
-        fileStructure: updateContent(state.fileStructure),
-        currentFile:
-          state.currentFile?.id === id
-            ? { ...state.currentFile, content }
-            : state.currentFile,
-      };
-    }),
+    set((state) => ({
+      fileStructure: updateFile(state.fileStructure),
+      openFiles: state.openFiles.map((file) =>
+        file.id === fileId ? { ...file, content } : file
+      ),
+      activeFile:
+        state.activeFile?.id === fileId
+          ? { ...state.activeFile, content }
+          : state.activeFile,
+    }));
+  },
 
   addFile: (parentPath: string, newFile: Omit<FileNode, "id">) =>
     set((state) => {
@@ -136,7 +171,7 @@ export const usePromptStore = create<PromptState>((set) => ({
 
       return {
         fileStructure: removeFile(state.fileStructure),
-        currentFile: state.currentFile?.id === id ? null : state.currentFile,
+        currentFile: state.activeFile?.id === id ? null : state.activeFile,
       };
     }),
 
@@ -154,7 +189,7 @@ export const usePromptStore = create<PromptState>((set) => ({
   reset: () =>
     set({
       prompt: null,
-      currentFile: null,
+      activeFile: null,
       currentStepId: null,
       isGenerating: false,
     }),

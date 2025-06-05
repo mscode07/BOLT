@@ -1,21 +1,24 @@
 import MonacoEditor from "@monaco-editor/react";
 import { useEffect, useState } from "react";
 import { FileNode, usePromptStore } from "../../store/promptStore";
+import { X } from "lucide-react";
+import { cn } from "../../utils/cn";
 
 interface EditorProps {
-  file: FileNode;
+  openFiles: FileNode[];
+  activeFile: FileNode | null;
   theme: "vs-dark" | "vs";
 }
 
-export default function Editor({ file, theme }: EditorProps) {
-  const { updateFileContent } = usePromptStore();
-  const [value, setValue] = useState(file.content || "");
+export default function Editor({ openFiles, activeFile, theme }: EditorProps) {
+  const { updateFileContent, setActiveFile, closeFile } = usePromptStore();
+  const [value, setValue] = useState(activeFile?.content || "");
 
   useEffect(() => {
-    setValue(file.content || "");
-  }, [file]);
+    setValue(activeFile?.content || "");
+  }, [activeFile]);
 
-  const getLanguage = () => {
+  const getLanguage = (file: FileNode) => {
     if (file.language) return file.language;
 
     const extension = file.name.split(".").pop()?.toLowerCase() || "";
@@ -46,41 +49,80 @@ export default function Editor({ file, theme }: EditorProps) {
     const newValue = value || "";
     setValue(newValue);
 
-    const timeoutId = setTimeout(() => {
-      updateFileContent(file.id, newValue);
-    }, 500);
+    if (activeFile) {
+      const timeoutId = setTimeout(() => {
+        updateFileContent(activeFile.id, newValue);
+      }, 500);
 
-    return () => clearTimeout(timeoutId);
+      return () => clearTimeout(timeoutId);
+    }
   };
 
   return (
-    <div className="flex-1 overflow-hidden">
-      <div className="h-9 px-4 flex items-center bg-gray-100 dark:bg-dark-100 border-b border-gray-200 dark:border-gray-800">
-        <span className="text-sm font-medium truncate">{file.name} X</span>
+    <div className="flex-1 overflow-hidden flex flex-col">
+      {/* Tab Bar */}
+      <div className="h-9 bg-gray-100 dark:bg-dark-100 border-b border-gray-200 dark:border-gray-800 flex items-center overflow-x-auto">
+        {openFiles.length === 0 ? (
+          <span className="px-4 text-sm text-gray-500 dark:text-gray-400">
+            No files open
+          </span>
+        ) : (
+          openFiles.map((file) => (
+            <div
+              key={file.id}
+              className={cn(
+                "flex items-center px-4 h-full text-sm font-medium cursor-pointer border-r border-gray-200 dark:border-gray-800",
+                file.id === activeFile?.id
+                  ? "bg-white dark:bg-dark-200 text-gray-900 dark:text-gray-100"
+                  : "bg-gray-100 dark:bg-dark-100 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dark-50"
+              )}
+              onClick={() => setActiveFile(file)}
+            >
+              <span className="truncate max-w-[150px]">{file.name}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeFile(file.id);
+                }}
+                className="ml-2 p-1 rounded-full hover:bg-gray-300 dark:hover:bg-dark-300 transition-colors"
+                aria-label={`Close ${file.name}`}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ))
+        )}
       </div>
 
-      <div className="h-[calc(100%-2.25rem)]">
-        <MonacoEditor
-          height="100%"
-          language={getLanguage()}
-          value={value}
-          theme={theme}
-          onChange={handleEditorChange}
-          options={{
-            minimap: { enabled: true },
-            scrollBeyondLastLine: false,
-            fontSize: 14,
-            wordWrap: "on",
-            lineNumbers: "on",
-            automaticLayout: true,
-            padding: { top: 10 },
-            scrollbar: {
-              useShadows: false,
-              verticalScrollbarSize: 10,
-              horizontalScrollbarSize: 10,
-            },
-          }}
-        />
+      {/* Editor Content */}
+      <div className="flex-1 overflow-hidden">
+        {activeFile ? (
+          <MonacoEditor
+            height="100%"
+            language={getLanguage(activeFile)}
+            value={value}
+            theme={theme}
+            onChange={handleEditorChange}
+            options={{
+              minimap: { enabled: true },
+              scrollBeyondLastLine: false,
+              fontSize: 14,
+              wordWrap: "on",
+              lineNumbers: "on",
+              automaticLayout: true,
+              padding: { top: 10 },
+              scrollbar: {
+                useShadows: false,
+                verticalScrollbarSize: 10,
+                horizontalScrollbarSize: 10,
+              },
+            }}
+          />
+        ) : (
+          <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
+            <p>No file selected</p>
+          </div>
+        )}
       </div>
     </div>
   );

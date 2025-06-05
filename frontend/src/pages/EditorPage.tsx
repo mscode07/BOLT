@@ -11,8 +11,9 @@ import { usePromptStore } from "../store/promptStore";
 export default function EditorPage() {
   const {
     prompt,
-    currentFile,
-    setCurrentFile,
+    openFiles,
+    activeFile,
+    openFile,
     fileStructure,
     steps,
     currentStepId,
@@ -35,10 +36,10 @@ export default function EditorPage() {
   }, [prompt, navigate]);
 
   useEffect(() => {
-    if (!currentFile && fileStructure.length > 0) {
+    if (!openFiles.length && fileStructure.length > 0) {
       const findFirstFile = (
         nodes: typeof fileStructure
-      ): typeof currentFile => {
+      ): typeof activeFile => {
         for (const node of nodes) {
           if (node.type === "file") {
             return node;
@@ -52,10 +53,10 @@ export default function EditorPage() {
 
       const firstFile = findFirstFile(fileStructure);
       if (firstFile) {
-        setCurrentFile(firstFile);
+        openFile(firstFile);
       }
     }
-  }, [fileStructure, currentFile, setCurrentFile]);
+  }, [fileStructure, openFiles, openFile]);
 
   const currentStep =
     steps.find((step) => step.id === currentStepId) || steps[0];
@@ -77,13 +78,14 @@ export default function EditorPage() {
 
         <div className="flex-1 flex overflow-hidden">
           {/* File Explorer */}
-          <FileExplorer files={fileStructure} currentFileId={currentFile?.id} />
+          <FileExplorer files={fileStructure} activeFileId={activeFile?.id} />
 
           {/* Editor Area */}
           <div className="flex-1 flex flex-col overflow-hidden relative">
-            {currentFile ? (
+            {activeFile ? (
               <Editor
-                file={currentFile}
+                openFiles={openFiles}
+                activeFile={activeFile}
                 theme={theme === "dark" ? "vs-dark" : "vs"}
               />
             ) : (
@@ -120,7 +122,7 @@ export default function EditorPage() {
         </div>
       </div>
 
-      <Statusbar currentFile={currentFile} currentStep={currentStep} />
+      <Statusbar activeFile={activeFile} currentStep={currentStep} />
     </div>
   );
 }
