@@ -49,6 +49,20 @@ app.post("/template", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         // const genratedCode = await codeResponse;
         const genratedCode = codeResponse.content[0].text;
         console.log("Genrated code: ", genratedCode);
+        //! streaiming the code generation
+        // const codeResponse = await anthropic.messages
+        //   .stream({
+        //     messages: [{ role: "user", content: userMessage }],
+        //     model: "claude-3-7-sonnet-20250219",
+        //     max_tokens: 4096,
+        //     system: getSystemPrompt(),
+        //   })
+        //   .on("text", (text) => {
+        //     console.log(text);
+        //   });
+        // const genratedCode = await codeResponse;
+        // // const genratedCode = (codeResponse.content[0] as TextBlock).text;
+        // console.log("Genrated code: ", genratedCode);
         res.json({
             techByUser,
             genratedCode,
