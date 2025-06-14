@@ -31,35 +31,43 @@ app.post("/template", async (req, res) => {
 
     const userMessage = `${basePromt}\n\nUser Request: ${usreRequest}`;
 
-    const codeResponse = await anthropic.messages.create({
-      messages: [{ role: "user", content: userMessage }],
-      model: "claude-3-7-sonnet-20250219",
-      max_tokens: 4096,
-      system: getSystemPrompt(),
-    });
+    // const codeResponse = await anthropic.messages.create({
+    //   messages: [{ role: "user", content: userMessage }],
+    //   model: "claude-3-7-sonnet-20250219",
+    //   max_tokens: 4096,
+    //   system: getSystemPrompt(),
+    // });
     // .on("text", (text) => {
     //   console.log(text);
     // });
     // const genratedCode = (codeResponse.content[0] as TextBlock).text;
     // const genratedCode = await codeResponse;
-    const genratedCode = (codeResponse.content[0] as TextBlock).text;
-    console.log("Genrated code: ", genratedCode);
+    // const genratedCode = (codeResponse.content[0] as TextBlock).text;
+    // console.log("Genrated code: ", genratedCode);
 
     //! streaiming the code generation
-    // const codeResponse = await anthropic.messages
-    //   .stream({
-    //     messages: [{ role: "user", content: userMessage }],
-    //     model: "claude-3-7-sonnet-20250219",
-    //     max_tokens: 4096,
-    //     system: getSystemPrompt(),
-    //   })
-    //   .on("text", (text) => {
-    //     console.log(text);
-    //   });
+    const codeResponse = await anthropic.messages
+      .stream({
+        messages: [{ role: "user", content: userMessage }],
+        model: "claude-3-7-sonnet-20250219",
+        max_tokens: 4096,
+        system: getSystemPrompt(),
+      })
+      .on("text", (text) => {
+        console.log(text);
+      })
+      .on("end", () => {
+        res.write(`event: end\ndata: Stream complete\n\n`);
+        res.end();
+      })
+      .on("error", (error) => {
+        res.status(500).write(`event: error\ndata: ${error.message}\n\n`);
+        res.end();
+      });
 
-    // const genratedCode = await codeResponse;
-    // // const genratedCode = (codeResponse.content[0] as TextBlock).text;
-    // console.log("Genrated code: ", genratedCode);
+    const genratedCode = codeResponse;
+    // const genratedCode = (codeResponse.content[0] as TextBlock).text;
+    console.log("Genrated code: ", genratedCode);
 
     res.json({
       techByUser,
