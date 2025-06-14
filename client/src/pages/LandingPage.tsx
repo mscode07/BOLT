@@ -1,20 +1,35 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  Code,
+  Sparkles,
+  Moon,
+  Sun,
+  Zap,
+  Rocket,
+  Brain,
+  ArrowRight,
+  Play,
+  Globe,
+  Palette,
+  Terminal,
+} from "lucide-react";
 import { usePromptStore } from "../store/promptStore";
-import { Code, Sparkles, Moon, Sun } from "lucide-react";
-import { useTheme } from "../contexts/ThemeContext";
-import { cn } from "../utils/cn";
 import axios from "axios";
 import { BACKEND_URL } from "../config";
 import { parseBoltArtifact } from "../ParseResponse";
+import { useNavigate } from "react-router-dom";
 
 export default function LandingPage() {
   const [promptText, setPromptText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { setPrompt, setIsGenerating, setFileStructure, setSteps } =
+  const [theme, setTheme] = useState("dark");
+  const { setPrompt, setFileStructure, setSteps, setIsGenerating } =
     usePromptStore();
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
 
   const handlePromptSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,164 +116,393 @@ export default function LandingPage() {
     }
   };
 
+  const features = [
+    {
+      title: "AI-Powered Magic",
+      description:
+        "Advanced AI that understands your vision and transforms ideas into production-ready code instantly",
+      icon: <Brain className="h-7 w-7" />,
+      gradient: "from-purple-500 to-pink-500",
+    },
+    {
+      title: "Lightning Fast",
+      description:
+        "Generate complete websites in seconds, not hours. Experience the future of web development",
+      icon: <Zap className="h-7 w-7" />,
+      gradient: "from-yellow-500 to-orange-500",
+    },
+    {
+      title: "Pro Code Editor",
+      description:
+        "Built-in professional editor with syntax highlighting, auto-completion, and real-time preview",
+      icon: <Terminal className="h-7 w-7" />,
+      gradient: "from-green-500 to-emerald-500",
+    },
+  ];
+
+  const examples = [
+    "Create a modern portfolio website with dark mode",
+    "Build a landing page for a SaaS product with pricing",
+    "Design a restaurant website with online menu",
+    "Make a blog website with responsive design",
+  ];
+
+  const cn = (...classes: any) => {
+    return classes.filter(Boolean).join(" ");
+  };
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="w-full py-4 px-6 flex justify-between items-center bg-white dark:bg-dark-200 border-b border-gray-200 dark:border-gray-800">
-        <div className="flex items-center space-x-2">
-          <Code className="h-6 w-6 text-primary-600" />
-          <span className="text-xl font-semibold">WebCraft</span>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div
+          className="absolute top-40 right-20 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"
+          style={{ animationDelay: "2s" }}
+        ></div>
+        <div
+          className="absolute -bottom-8 left-40 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"
+          style={{ animationDelay: "4s" }}
+        ></div>
+      </div>
+
+      {/* Floating code snippets */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute top-32 left-10 text-green-400 font-mono text-sm opacity-30"
+          style={{
+            animation: "float 3s ease-in-out infinite",
+          }}
+        >
+          &lt;div className="hero"&gt;
+        </div>
+        <div
+          className="absolute top-64 right-16 text-blue-400 font-mono text-sm opacity-30"
+          style={{
+            animation: "float 3s ease-in-out infinite",
+            animationDelay: "1s",
+          }}
+        >
+          const magic = true;
+        </div>
+        <div
+          className="absolute bottom-40 left-20 text-purple-400 font-mono text-sm opacity-30"
+          style={{
+            animation: "float 3s ease-in-out infinite",
+            animationDelay: "2s",
+          }}
+        >
+          export default App;
+        </div>
+      </div>
+
+      <header className="relative z-10 w-full py-6 px-6 flex justify-between items-center backdrop-blur-sm bg-white/5 border-b border-white/10">
+        <div className="flex items-center space-x-3">
+          <div className="relative">
+            <Code
+              className="h-8 w-8"
+              style={{
+                background:
+                  "linear-gradient(to right, rgb(168, 85, 247), rgb(236, 72, 153))",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-lg blur opacity-75 animate-pulse"></div>
+          </div>
+          <span
+            className="text-2xl font-bold cursor-pointer"
+            style={{
+              background:
+                "linear-gradient(to right, white, rgb(209, 213, 219))",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            codeINN
+          </span>
+          <div className="px-2 py-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full text-xs text-purple-300 border border-purple-500/30">
+            AI-Powered
+          </div>
         </div>
 
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-100 transition-colors"
+          className="p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-300 backdrop-blur-sm border border-white/10 hover:border-white/20"
           aria-label={
             theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
           }
         >
           {theme === "dark" ? (
-            <Sun className="h-5 w-5" />
+            <Sun className="h-5 w-5 text-yellow-300" />
           ) : (
-            <Moon className="h-5 w-5" />
+            <Moon className="h-5 w-5 text-purple-300" />
           )}
         </button>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl w-full space-y-8 text-center">
-          <div className="space-y-2 animate-slide-up">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white">
-              Create beautiful websites with AI
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-20">
+        <div className="max-w-6xl w-full space-y-12 text-center">
+          {/* Hero Section */}
+          <div
+            className="space-y-8"
+            style={{
+              animation: "slideUp 0.8s ease-out",
+            }}
+          >
+            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full text-purple-300 border border-purple-500/30 backdrop-blur-sm">
+              <Sparkles className="h-4 w-4 mr-2" />
+              <span className="text-sm font-medium">
+                Powered by Advanced AI
+              </span>
+            </div>
+
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-tight">
+              Transform Ideas Into
+              <br />
+              <span
+                style={{
+                  background:
+                    "linear-gradient(to right, rgb(168, 85, 247), rgb(236, 72, 153), rgb(251, 191, 36))",
+                  backgroundSize: "300% 300%",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  animation: "gradient 3s ease infinite",
+                }}
+              >
+                Stunning Websites
+              </span>
             </h1>
-            <p className="mt-4 text-xl text-gray-600 dark:text-gray-300">
-              Turn your ideas into code with our AI-powered website generator.
-              Just describe what you want, and we'll build it for you.
+
+            <p className="mt-6 text-xl sm:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              Skip the complexity, embrace the magic. Describe your vision in
+              plain English and watch our AI craft pixel-perfect, responsive
+              websites in seconds.
             </p>
+
+            <div className="flex flex-wrap justify-center gap-6 mt-8">
+              <div className="flex items-center text-green-400">
+                <div className="w-2 h-2 bg-green-400 rounded-full mr-3 animate-pulse"></div>
+                <span className="text-sm">No coding required</span>
+              </div>
+              <div className="flex items-center text-blue-400">
+                <div className="w-2 h-2 bg-blue-400 rounded-full mr-3 animate-pulse"></div>
+                <span className="text-sm">Instant deployment</span>
+              </div>
+              <div className="flex items-center text-purple-400">
+                <div className="w-2 h-2 bg-purple-400 rounded-full mr-3 animate-pulse"></div>
+                <span className="text-sm">Professional results</span>
+              </div>
+            </div>
           </div>
 
-          <form
-            onSubmit={handlePromptSubmit}
-            className="mt-8 animate-slide-up"
-            style={{ animationDelay: "100ms" }}
-          >
-            <div className="flex flex-col space-y-4">
-              <div className="relative">
-                <textarea
-                  className={cn(
-                    "input min-h-32 p-4 text-base",
-                    isLoading && "opacity-70"
-                  )}
-                  placeholder="Describe the website you want to create..."
-                  value={promptText}
-                  onChange={(e) => setPromptText(e.target.value)}
-                  disabled={isLoading}
-                  required
-                />
-                <div className="absolute right-3 bottom-3 text-gray-400 text-sm">
-                  {promptText.length} characters
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading || !promptText.trim()}
-                className={cn(
-                  "btn btn-primary py-3 px-6 text-base font-medium rounded-md flex items-center justify-center",
-                  isLoading && "animate-pulse"
-                )}
-              >
-                {isLoading ? (
-                  <>
-                    <span className="mr-2">Generating</span>
-                    <div className="flex space-x-1">
-                      <span
-                        className="h-2 w-2 bg-white rounded-full animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      ></span>
-                      <span
-                        className="h-2 w-2 bg-white rounded-full animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      ></span>
-                      <span
-                        className="h-2 w-2 bg-white rounded-full animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      ></span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    Generate Website
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-
+          {/* Interactive Prompt Section */}
           <div
-            className="mt-12 grid gap-8 sm:grid-cols-3 animate-fade-in"
-            style={{ animationDelay: "200ms" }}
+            className="mt-16 max-w-4xl mx-auto"
+            style={{
+              animation: "slideUp 0.8s ease-out 0.2s both",
+            }}
           >
-            {/* {features.map((feature, index) => (
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-800 to-pink-800 rounded-2xl blur opacity-75 animate-pulse"></div>
+              <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20">
+                <div className="relative">
+                  <textarea
+                    className={cn(
+                      "w-full min-h-32 p-6 text-lg bg-white/5 backdrop-blur-sm rounded-xl border border-white/20 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300",
+                      isLoading && "opacity-70"
+                    )}
+                    placeholder="✨ Describe your dream website... (e.g., 'Create a modern portfolio for a Developer')"
+                    value={promptText}
+                    onChange={(e) => setPromptText(e.target.value)}
+                    onKeyDown={(e) => {
+                      console.log(e.key, "Key pressed");
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault(); // prevent newline
+                        if (promptText.trim() && !isLoading) {
+                          handlePromptSubmit(); // no event passed
+                        }
+                      }
+                    }}
+                    disabled={isLoading}
+                  />
+
+                  {/* Quick Examples */}
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {examples.map((example, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => setPromptText(example)}
+                        className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full text-xs text-gray-300 hover:text-white transition-all duration-200 border border-white/10 hover:border-white/20"
+                      >
+                        {example}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handlePromptSubmit}
+                  disabled={isLoading || !promptText.trim()}
+                  className={cn(
+                    "mt-6 w-full py-4 px-8 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center text-lg shadow-2xl",
+                    isLoading && "animate-pulse"
+                  )}
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="flex items-center">
+                        <div className="mr-3">🎨 Crafting your website</div>
+                        <div className="flex space-x-1">
+                          <span className="h-2 w-2 bg-white rounded-full animate-bounce"></span>
+                          <span
+                            className="h-2 w-2 bg-white rounded-full animate-bounce"
+                            style={{ animationDelay: "150ms" }}
+                          ></span>
+                          <span
+                            className="h-2 w-2 bg-white rounded-full animate-bounce"
+                            style={{ animationDelay: "300ms" }}
+                          ></span>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Rocket className="mr-3 h-6 w-6" />
+                      Generate My Website
+                      <ArrowRight className="ml-3 h-6 w-6" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Features Section */}
+          <div
+            className="mt-20 grid gap-8 sm:grid-cols-3"
+            style={{
+              animation: "fadeIn 1s ease-out 0.4s both",
+            }}
+          >
+            {features.map((feature, index) => (
               <div
                 key={index}
-                className="p-6 bg-white dark:bg-dark-100 rounded-lg shadow-md"
+                className="group relative p-8 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 transition-all duration-500 hover:transform hover:scale-105"
               >
-                <div className="flex items-center justify-center h-12 w-12 rounded-md bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-300 mb-4 mx-auto">
-                  {feature.icon}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative">
+                  <div
+                    className={cn(
+                      "flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-r text-white mb-6 mx-auto shadow-lg",
+                      `bg-gradient-to-r ${feature.gradient}`
+                    )}
+                  >
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-4 group-hover:text-purple-300 transition-colors duration-300">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors duration-300">
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400">
-                  {feature.description}
-                </p>
               </div>
-            ))} */}
+            ))}
+          </div>
+
+          {/* Call to Action */}
+          <div
+            className="mt-20 text-center"
+            style={{
+              animation: "fadeIn 1s ease-out 0.6s both",
+            }}
+          >
+            <p className="text-gray-400 mb-4">
+              Join thousands of creators who've already built amazing websites
+            </p>
+            <div className="flex justify-center items-center space-x-8 text-sm text-gray-500">
+              <div className="flex items-center">
+                <Globe className="h-4 w-4 mr-2 text-green-400" />
+                <span>10k+ websites created</span>
+              </div>
+              <div className="flex items-center">
+                <Palette className="h-4 w-4 mr-2 text-purple-400" />
+                <span>100+ templates</span>
+              </div>
+              <div className="flex items-center">
+                <Play className="h-4 w-4 mr-2 text-blue-400" />
+                <span>Ready in 30 seconds</span>
+              </div>
+            </div>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="py-6 px-6 border-t border-gray-200 dark:border-gray-800 text-center text-gray-500 dark:text-gray-400">
-        <p>© 2025 WebCraft. All rights reserved.</p>
+      <footer className="relative z-10 py-8 px-6 border-t border-white/10 backdrop-blur-sm text-center">
+        <div className="flex justify-center items-center space-x-2 mb-4">
+          <Code className="h-5 w-5 text-purple-400" />
+          <span
+            className="text-lg font-semibold"
+            style={{
+              background:
+                "linear-gradient(to right, white, rgb(209, 213, 219))",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            codeINN
+          </span>
+        </div>
+        <p className="text-gray-400 text-sm">
+          © 2025 codeINN. Crafting the future of web development with AI.
+        </p>
       </footer>
+
+      <style jsx>{`
+        @keyframes gradient {
+          0%,
+          100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+
+        @keyframes float {
+          0%,
+          100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }
-
-// Features data
-// const features = [
-//   {
-//     title: "AI-Powered",
-//     description:
-//       "Our advanced AI interprets your descriptions and generates professional code",
-//     icon: <Sparkles className="h-6 w-6" />,
-//   },
-//   {
-//     title: "Code Editor",
-//     description:
-//       "Professional editor interface with syntax highlighting and autocompletion",
-//     icon: <Code className="h-6 w-6" />,
-//   },
-//   {
-//     title: "Step-by-Step",
-//     description: "Follow guided steps to customize and perfect your website",
-//     icon: (
-//       <svg
-//         xmlns="http://www.w3.org/2000/svg"
-//         className="h-6 w-6"
-//         fill="none"
-//         viewBox="0 0 24 24"
-//         stroke="currentColor"
-//       >
-//         <path
-//           strokeLinecap="round"
-//           strokeLinejoin="round"
-//           strokeWidth={2}
-//           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-//         />
-//       </svg>
-//     ),
-//   },
-// ];
