@@ -16,13 +16,15 @@ const anthropic = new Anthropic();
 app.post("/template", async (req, res) => {
   console.log("Request body: ", req.body.prompt);
   const usreRequest = req.body.prompt;
+  // const { prompt: userMessage } = req.body;
+  const techByUser = "html";
   try {
     const response = await anthropic.messages.create({
       messages: [{ role: "user", content: usreRequest }],
       model: "claude-3-7-sonnet-20250219",
       max_tokens: 1024,
       system:
-        "Return the tech based on what do you think this project should be. Only return a single word for        example if you think it's a node project then reatun 'node', if it's a react project return 'react' Same with other tech return the tech in single word. Do not return anything extra",
+        "Return the tech based on what do you think this project should be. Only return a single word for example if you think it's a node project then reatun 'node', if it's a react project return 'react' Same with other tech return the tech in single word. Do not return anything extra",
     });
     const techByUser = (response.content[0] as TextBlock).text;
     console.log(`Detectec tech :${techByUser}`);
@@ -31,21 +33,7 @@ app.post("/template", async (req, res) => {
 
     const userMessage = `${basePromt}\n\nUser Request: ${usreRequest}`;
 
-    // const codeResponse = await anthropic.messages.create({
-    //   messages: [{ role: "user", content: userMessage }],
-    //   model: "claude-3-7-sonnet-20250219",
-    //   max_tokens: 4096,
-    //   system: getSystemPrompt(),
-    // });
-    // .on("text", (text) => {
-    //   console.log(text);
-    // });
-    // const genratedCode = (codeResponse.content[0] as TextBlock).text;
-    // const genratedCode = await codeResponse;
-    // const genratedCode = (codeResponse.content[0] as TextBlock).text;
-    // console.log("Genrated code: ", genratedCode);
-
-    //! streaiming the code generation
+    //? streaiming the code generation
     const codeResponse = await anthropic.messages
       .stream({
         messages: [{ role: "user", content: userMessage }],
@@ -69,10 +57,10 @@ app.post("/template", async (req, res) => {
     // const genratedCode = (codeResponse.content[0] as TextBlock).text;
     console.log("Genrated code: ", genratedCode);
 
-    res.json({
-      techByUser,
-      genratedCode,
-    });
+    // res.json({
+    //   techByUser,
+    //   genratedCode,
+    // });
   } catch (error) {
     console.log("Getting error here ", error);
     res.status(500).json({ message: "Faild to genreate code" });

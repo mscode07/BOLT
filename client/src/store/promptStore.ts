@@ -32,6 +32,11 @@ interface PromptState {
   activeFile: FileNode | null;
   currentStepId: number | null;
   isGenerating: boolean;
+  streamedResponse: string | null;
+  panelContent: string | null;
+
+  setPanelContent: (content: string | null) => void;
+  setStreamedResponse: (response: string | null) => void;
 
   setPrompt: (text: string) => void;
   setFileStructure: (files: FileNode[]) => void;
@@ -62,6 +67,8 @@ export const usePromptStore = create<PromptState>((set) => ({
   activeFile: null,
   currentStepId: 2,
   isGenerating: false,
+  streamedResponse: null,
+  panelContent: null,
 
   setPrompt: (text: string) =>
     set({
@@ -176,6 +183,8 @@ export const usePromptStore = create<PromptState>((set) => ({
     }),
 
   setIsGenerating: (isGenerating: boolean) => set({ isGenerating }),
+  setStreamedResponse: (streamedResponse) => set({ streamedResponse }),
+  setPanelContent: (panelContent) => set({ panelContent }),
 
   completeStep: (id: number) =>
     set((state) => ({
