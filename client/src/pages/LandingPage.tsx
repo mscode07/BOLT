@@ -23,8 +23,14 @@ export default function LandingPage() {
   const [promptText, setPromptText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [theme, setTheme] = useState("dark");
-  const { setPrompt, setFileStructure, setSteps, setIsGenerating } =
-    usePromptStore();
+  const {
+    setPrompt,
+    setFileStructure,
+    setSteps,
+    setIsGenerating,
+    setStreamedResponse,
+    setPanelContent,
+  } = usePromptStore();
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
@@ -37,78 +43,134 @@ export default function LandingPage() {
     if (promptText.trim()) {
       setIsLoading(true);
       setIsGenerating(true);
+      setStreamedResponse("");
+      // try {
+      //   const response = await axios.post(`${BACKEND_URL}/template`, {
+      //     prompt: promptText,
+      //   });
+      //   let artifactString: string;
+
+      //   console.log(response, "Response from the server");
+
+      //   console.log(response.data, "This is the response");
+
+      //   if (typeof response.data === "object" && response.data) {
+      //     if (typeof response.data.genratedCode === "string") {
+      //       artifactString = response.data.genratedCode;
+      //     } else if (
+      //       response.data.data &&
+      //       typeof response.data.data.genratedCode === "string"
+      //     ) {
+      //       artifactString = response.data.data.genratedCode;
+      //     } else {
+      //       throw new Error(
+      //         "Invalid response structure: 'code' field not found in response.data"
+      //       );
+      //     }
+
+      //     if (
+      //       !artifactString.includes("<boltArtifact") &&
+      //       !artifactString.includes("<BoltArtifact")
+      //     ) {
+      //       throw new Error(
+      //         "Extracted artifact string does not contain <boltArtifact>"
+      //       );
+      //     }
+      //   } else if (typeof response.data === "string") {
+      //     const artifactMatch = response.data.match(
+      //       /<boltArtifact[^>]*>[\s\S]*<\/boltArtifact>/
+      //     );
+      //     if (!artifactMatch) {
+      //       throw new Error("No <boltArtifact> found in response string");
+      //     }
+      //     artifactString = artifactMatch[0];
+      //   } else {
+      //     throw new Error(
+      //       "Invalid response type: response.data must be a string or object"
+      //     );
+      //   }
+
+      //   //console.log("Extracted artifactString:", artifactString);
+
+      //   const artifactMatch = artifactString.match(
+      //     /<boltArtifact[^>]*>[\s\S]*<\/boltArtifact>/
+      //   );
+      //   if (!artifactMatch) {
+      //     throw new Error(
+      //       "Failed to clean artifactString: No <boltArtifact> found"
+      //     );
+      //   }
+      //   const cleanedArtifactString = artifactMatch[0];
+      //   //console.log("Cleaned artifactString:", cleanedArtifactString);
+
+      //   const code = response.data;
+      //   setPrompt(promptText);
+      //   const { files, steps } = parseBoltArtifact(cleanedArtifactString);
+      //   console.log("Files stucture is here", files);
+      //   // console.log("Steps are  here", steps);
+
+      //   setFileStructure(files);
+      //   setSteps(steps);
+      //   navigate("/editor", { state: { promptText, code } }); //?, { state: { promptText, data } }
+      // } catch (error) {
+      //   console.error("Error submitting prompt:", error);
+      //   setIsGenerating(false);
+      //   setIsLoading(false);
+      // } finally {
+      //   setIsGenerating(false);
+      //   setIsLoading(false);
+      // }
+
+      //? New handlePromtSub
       try {
-        const response = await axios.post(`${BACKEND_URL}/template`, {
-          prompt: promptText,
-        });
-        let artifactString: string;
+        const eventSource = new EventSource(`${BACKEND_URL}/template`);
+        let accumulatedResponse = "";
 
-        console.log(response, "Response from the server");
+        eventSource.onmessage = (event) => {
+          const data = event.data;
+          accumulatedResponse += data;
 
-        console.log(response.data, "This is the response");
-
-        if (typeof response.data === "object" && response.data) {
-          if (typeof response.data.genratedCode === "string") {
-            artifactString = response.data.genratedCode;
-          } else if (
-            response.data.data &&
-            typeof response.data.data.genratedCode === "string"
-          ) {
-            artifactString = response.data.data.genratedCode;
-          } else {
-            throw new Error(
-              "Invalid response structure: 'code' field not found in response.data"
-            );
+          // Parse partial response for file content
+          const fileMatch = accumulatedResponse.match(
+            /<boltAction[^>]*type="file"[^>]*>([\s\S]*?)<\/boltAction>/i
+          );
+          if (fileMatch) {
+            const fileContent =
+              fileMatch[2] || fileMatch[1].replace(/<!\[CDATA\[|\]\]>/g, "");
+            setPanelContent(fileContent.trim());
           }
 
-          if (
-            !artifactString.includes("<boltArtifact") &&
-            !artifactString.includes("<BoltArtifact")
-          ) {
-            throw new Error(
-              "Extracted artifact string does not contain <boltArtifact>"
-            );
-          }
-        } else if (typeof response.data === "string") {
-          const artifactMatch = response.data.match(
+          setStreamedResponse(accumulatedResponse); // For debugging or full display
+        };
+
+        eventSource.addEventListener("end", () => {
+          eventSource.close();
+          const artifactMatch = accumulatedResponse.match(
             /<boltArtifact[^>]*>[\s\S]*<\/boltArtifact>/
           );
-          if (!artifactMatch) {
-            throw new Error("No <boltArtifact> found in response string");
+          if (artifactMatch) {
+            const cleanedArtifactString = artifactMatch[0];
+            const { files, steps } = parseBoltArtifact(cleanedArtifactString);
+            setPrompt(promptText);
+            setFileStructure(files);
+            setSteps(steps);
+            navigate("/editor", {
+              state: {
+                promptText,
+                code: { genratedCode: accumulatedResponse },
+              },
+            });
           }
-          artifactString = artifactMatch[0];
-        } else {
-          throw new Error(
-            "Invalid response type: response.data must be a string or object"
-          );
-        }
+        });
 
-        //console.log("Extracted artifactString:", artifactString);
-
-        const artifactMatch = artifactString.match(
-          /<boltArtifact[^>]*>[\s\S]*<\/boltArtifact>/
-        );
-        if (!artifactMatch) {
-          throw new Error(
-            "Failed to clean artifactString: No <boltArtifact> found"
-          );
-        }
-        const cleanedArtifactString = artifactMatch[0];
-        //console.log("Cleaned artifactString:", cleanedArtifactString);
-
-        const code = response.data;
-        setPrompt(promptText);
-        const { files, steps } = parseBoltArtifact(cleanedArtifactString);
-        console.log("Files stucture is here", files);
-        // console.log("Steps are  here", steps);
-
-        setFileStructure(files);
-        setSteps(steps);
-        navigate("/editor", { state: { promptText, code } }); //?, { state: { promptText, data } }
+        eventSource.onerror = (error) => {
+          console.error("Streaming error:", error);
+          eventSource.close();
+          throw new Error("Failed to stream response");
+        };
       } catch (error) {
         console.error("Error submitting prompt:", error);
-        setIsGenerating(false);
-        setIsLoading(false);
+        // Add toast or UI error message here
       } finally {
         setIsGenerating(false);
         setIsLoading(false);
