@@ -14,7 +14,6 @@ import {
   Terminal,
 } from "lucide-react";
 import { usePromptStore } from "../store/promptStore";
-import axios from "axios";
 import { BACKEND_URL } from "../config";
 import { parseBoltArtifact } from "../ParseResponse";
 import { useNavigate } from "react-router-dom";
@@ -23,6 +22,9 @@ export default function LandingPage() {
   const [promptText, setPromptText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [theme, setTheme] = useState("dark");
+  const [streamingStatus, setStreamingStatus] = useState("");
+  const [detectedTech, setDetectedTech] = useState("");
+
   const {
     setPrompt,
     setFileStructure,
@@ -31,151 +33,141 @@ export default function LandingPage() {
     setStreamedResponse,
     setPanelContent,
   } = usePromptStore();
+
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
   const navigate = useNavigate();
 
-  const handlePromptSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePromptSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
-    if (promptText.trim()) {
-      setIsLoading(true);
-      setIsGenerating(true);
-      setStreamedResponse("");
-      // try {
-      //   const response = await axios.post(`${BACKEND_URL}/template`, {
-      //     prompt: promptText,
-      //   });
-      //   let artifactString: string;
+    if (!promptText.trim()) return;
 
-      //   console.log(response, "Response from the server");
+    setIsLoading(true);
+    setIsGenerating(true);
+    setStreamedResponse("");
+    setStreamingStatus("Initializing...");
+    setDetectedTech("");
 
-      //   console.log(response.data, "This is the response");
+    let accumulatedResponse = "";
+    let eventSource: EventSource | null = null;
 
-      //   if (typeof response.data === "object" && response.data) {
-      //     if (typeof response.data.genratedCode === "string") {
-      //       artifactString = response.data.genratedCode;
-      //     } else if (
-      //       response.data.data &&
-      //       typeof response.data.data.genratedCode === "string"
-      //     ) {
-      //       artifactString = response.data.data.genratedCode;
-      //     } else {
-      //       throw new Error(
-      //         "Invalid response structure: 'code' field not found in response.data"
-      //       );
-      //     }
+    try {
+      const encodedPrompt = encodeURIComponent(promptText);
+      const url = `${BACKEND_URL}/template?prompt=${encodedPrompt}`;
 
-      //     if (
-      //       !artifactString.includes("<boltArtifact") &&
-      //       !artifactString.includes("<BoltArtifact")
-      //     ) {
-      //       throw new Error(
-      //         "Extracted artifact string does not contain <boltArtifact>"
-      //       );
-      //     }
-      //   } else if (typeof response.data === "string") {
-      //     const artifactMatch = response.data.match(
-      //       /<boltArtifact[^>]*>[\s\S]*<\/boltArtifact>/
-      //     );
-      //     if (!artifactMatch) {
-      //       throw new Error("No <boltArtifact> found in response string");
-      //     }
-      //     artifactString = artifactMatch[0];
-      //   } else {
-      //     throw new Error(
-      //       "Invalid response type: response.data must be a string or object"
-      //     );
-      //   }
+      eventSource = new EventSource(url);
 
-      //   //console.log("Extracted artifactString:", artifactString);
+      eventSource.onopen = () => {
+        console.log("SSE Connection opened");
+        setStreamingStatus("Connected - Analyzing your request...");
+      };
 
-      //   const artifactMatch = artifactString.match(
-      //     /<boltArtifact[^>]*>[\s\S]*<\/boltArtifact>/
-      //   );
-      //   if (!artifactMatch) {
-      //     throw new Error(
-      //       "Failed to clean artifactString: No <boltArtifact> found"
-      //     );
-      //   }
-      //   const cleanedArtifactString = artifactMatch[0];
-      //   //console.log("Cleaned artifactString:", cleanedArtifactString);
+      eventSource.onmessage = (event) => {
+        try {
+          const parsedData = JSON.parse(event.data);
 
-      //   const code = response.data;
-      //   setPrompt(promptText);
-      //   const { files, steps } = parseBoltArtifact(cleanedArtifactString);
-      //   console.log("Files stucture is here", files);
-      //   // console.log("Steps are  here", steps);
+          switch (parsedData.type) {
+            case "tech":
+              setDetectedTech(parsedData.data);
+              setStreamingStatus(
+                `Detected: ${parsedData.data} project - Generating code...`
+              );
+              break;
 
-      //   setFileStructure(files);
-      //   setSteps(steps);
-      //   navigate("/editor", { state: { promptText, code } }); //?, { state: { promptText, data } }
-      // } catch (error) {
-      //   console.error("Error submitting prompt:", error);
-      //   setIsGenerating(false);
-      //   setIsLoading(false);
-      // } finally {
-      //   setIsGenerating(false);
-      //   setIsLoading(false);
-      // }
+            case "code":
+              accumulatedResponse += parsedData.data;
+              setStreamedResponse(accumulatedResponse);
 
-      //? New handlePromtSub
-      try {
-        const eventSource = new EventSource(`${BACKEND_URL}/template`);
-        let accumulatedResponse = "";
+              const fileMatch = accumulatedResponse.match(
+                /<boltAction[^>]*type="file"[^>]*>([\s\S]*?)<\/boltAction>/i
+              );
+              if (fileMatch) {
+                const fileContent =
+                  fileMatch[1]?.replace(/<!\[CDATA\[|\]\]>/g, "") || "";
+                setPanelContent(fileContent.trim());
+              }
 
-        eventSource.onmessage = (event) => {
-          const data = event.data;
-          accumulatedResponse += data;
+              setStreamingStatus("Generating code...");
+              break;
 
-          // Parse partial response for file content
-          const fileMatch = accumulatedResponse.match(
-            /<boltAction[^>]*type="file"[^>]*>([\s\S]*?)<\/boltAction>/i
-          );
-          if (fileMatch) {
-            const fileContent =
-              fileMatch[2] || fileMatch[1].replace(/<!\[CDATA\[|\]\]>/g, "");
-            setPanelContent(fileContent.trim());
+            case "complete":
+              setStreamingStatus("Processing final results...");
+              break;
+
+            case "error":
+              console.error("Streaming error:", parsedData.data);
+              setStreamingStatus(`Error: ${parsedData.data}`);
+              break;
+
+            default:
+              console.log("Unknown message type:", parsedData);
           }
+        } catch (parseError) {
+          console.error("Failed to parse SSE data:", parseError);
+          accumulatedResponse += event.data;
+          setStreamedResponse(accumulatedResponse);
+        }
+      };
 
-          setStreamedResponse(accumulatedResponse); // For debugging or full display
-        };
+      eventSource.addEventListener("end", () => {
+        console.log("Stream ended");
+        setStreamingStatus("Finalizing...");
 
-        eventSource.addEventListener("end", () => {
-          eventSource.close();
-          const artifactMatch = accumulatedResponse.match(
-            /<boltArtifact[^>]*>[\s\S]*<\/boltArtifact>/
-          );
-          if (artifactMatch) {
-            const cleanedArtifactString = artifactMatch[0];
+        const artifactMatch = accumulatedResponse.match(
+          /<boltArtifact[^>]*>[\s\S]*<\/boltArtifact>/
+        );
+
+        if (artifactMatch) {
+          const cleanedArtifactString = artifactMatch[0];
+          try {
             const { files, steps } = parseBoltArtifact(cleanedArtifactString);
             setPrompt(promptText);
             setFileStructure(files);
             setSteps(steps);
+
             navigate("/editor", {
               state: {
                 promptText,
                 code: { genratedCode: accumulatedResponse },
+                detectedTech,
               },
             });
+          } catch (parseError) {
+            console.error("Failed to parse bolt artifact:", parseError);
+            setStreamingStatus("Error: Failed to process generated code");
           }
-        });
+        } else {
+          console.error("No bolt artifact found in response");
+          setStreamingStatus("Error: Invalid response format");
+        }
 
-        eventSource.onerror = (error) => {
-          console.error("Streaming error:", error);
-          eventSource.close();
-          throw new Error("Failed to stream response");
-        };
-      } catch (error) {
-        console.error("Error submitting prompt:", error);
-        // Add toast or UI error message here
-      } finally {
-        setIsGenerating(false);
+        eventSource?.close();
         setIsLoading(false);
-      }
+        setIsGenerating(false);
+      });
+
+      eventSource.onerror = (error) => {
+        console.error("SSE error:", error);
+        setStreamingStatus("Connection error. Please try again.");
+        eventSource?.close();
+        setIsLoading(false);
+        setIsGenerating(false);
+      };
+    } catch (error) {
+      console.error("Error starting stream:", error);
+      setStreamingStatus("Failed to start generation. Please try again.");
+      setIsLoading(false);
+      setIsGenerating(false);
     }
+
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
   };
 
   const features = [
@@ -215,7 +207,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-      {/* Animated background elements */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
         <div
@@ -228,7 +219,6 @@ export default function LandingPage() {
         ></div>
       </div>
 
-      {/* Floating code snippets */}
       <div className="absolute inset-0 pointer-events-none">
         <div
           className="absolute top-32 left-10 text-green-400 font-mono text-sm opacity-30"
@@ -374,22 +364,20 @@ export default function LandingPage() {
                       "w-full min-h-32 p-6 text-lg bg-white/5 backdrop-blur-sm rounded-xl border border-white/20 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300",
                       isLoading && "opacity-70"
                     )}
-                    placeholder="✨ Describe your dream website... (e.g., 'Create a modern portfolio for a Developer')"
+                    placeholder="✨Describe your dream website... (e.g., 'Create a modern portfolio for a Developer')"
                     value={promptText}
                     onChange={(e) => setPromptText(e.target.value)}
                     onKeyDown={(e) => {
-                      console.log(e.key, "Key pressed");
                       if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault(); // prevent newline
+                        e.preventDefault();
                         if (promptText.trim() && !isLoading) {
-                          handlePromptSubmit(); // no event passed
+                          handlePromptSubmit();
                         }
                       }
                     }}
                     disabled={isLoading}
                   />
 
-                  {/* Quick Examples */}
                   <div className="mt-4 flex flex-wrap gap-2">
                     {examples.map((example, index) => (
                       <button
@@ -397,12 +385,42 @@ export default function LandingPage() {
                         type="button"
                         onClick={() => setPromptText(example)}
                         className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full text-xs text-gray-300 hover:text-white transition-all duration-200 border border-white/10 hover:border-white/20"
+                        disabled={isLoading}
                       >
                         {example}
                       </button>
                     ))}
                   </div>
                 </div>
+
+                {/* Streaming Status */}
+                {isLoading && (
+                  <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="flex space-x-1 mr-3">
+                          <span className="h-2 w-2 bg-purple-400 rounded-full animate-bounce"></span>
+                          <span
+                            className="h-2 w-2 bg-purple-400 rounded-full animate-bounce"
+                            style={{ animationDelay: "150ms" }}
+                          ></span>
+                          <span
+                            className="h-2 w-2 bg-purple-400 rounded-full animate-bounce"
+                            style={{ animationDelay: "300ms" }}
+                          ></span>
+                        </div>
+                        <span className="text-sm text-purple-300">
+                          {streamingStatus}
+                        </span>
+                      </div>
+                      {detectedTech && (
+                        <div className="px-2 py-1 bg-purple-500/20 rounded-full text-xs text-purple-300 border border-purple-500/30">
+                          {detectedTech}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <button
                   type="button"
@@ -503,7 +521,6 @@ export default function LandingPage() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="relative z-10 py-8 px-6 border-t border-white/10 backdrop-blur-sm text-center">
         <div className="flex justify-center items-center space-x-2 mb-4">
           <Code className="h-5 w-5 text-purple-400" />
@@ -516,7 +533,7 @@ export default function LandingPage() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            codeINN
+            CodeINN
           </span>
         </div>
         <p className="text-gray-400 text-sm">
@@ -524,7 +541,7 @@ export default function LandingPage() {
         </p>
       </footer>
 
-      <style jsx>{`
+      <style>{`
         @keyframes gradient {
           0%,
           100% {
