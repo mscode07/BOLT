@@ -60,7 +60,6 @@ export default function Editor({ openFiles, activeFile, theme }: EditorProps) {
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
-      {/* Tab Bar */}
       <div className="h-9 bg-gray-100 dark:bg-dark-100 border-b border-gray-200 dark:border-gray-800 flex items-center overflow-x-auto">
         {openFiles.length === 0 ? (
           <span className="px-4 text-sm text-gray-500 dark:text-gray-400">
@@ -94,7 +93,6 @@ export default function Editor({ openFiles, activeFile, theme }: EditorProps) {
         )}
       </div>
 
-      {/* Editor Content */}
       <div className="flex-1 overflow-hidden">
         {activeFile ? (
           <MonacoEditor
