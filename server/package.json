@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -15,7 +17,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "openai": "^4.98.0"
+    "openai": "^4.98.0",
+    "serve": "^14.2.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.18",

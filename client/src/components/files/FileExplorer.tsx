@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { FileNode, usePromptStore } from "../../store/promptStore";
 
 interface FileExplorerProps {
@@ -10,18 +10,14 @@ export default function FileExplorer({
   files,
   activeFileId,
 }: FileExplorerProps) {
-  // const [expandedFolders, setExpandedFolders] = useState<
-  //   Record<string, boolean>
-  // >({
-  //   "/src": true, // Default expand src folder
-  // });
   const { openFile } = usePromptStore();
 
   const renderFileTree = (nodes: FileNode[]) => {
     return nodes.map((node) => (
       <div key={node.id} className="ml-4">
         {node.type === "folder" ? (
-          <div>
+          <div className="flex items-center">
+            <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
             <span>{node.name}</span>
             {node.children && renderFileTree(node.children)}
           </div>
@@ -29,9 +25,10 @@ export default function FileExplorer({
           <div
             className={`cursor-pointer p-1 ${
               node.id === activeFileId ? "bg-gray-200 dark:bg-dark-100" : ""
-            }`}
+            } flex items-center gap-2`}
             onClick={() => openFile(node)}
           >
+            <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
             {node.name}
           </div>
         )}
