@@ -98,7 +98,7 @@ export default function EditorPage() {
               </div>
             )}
 
-            {previewVisible && (
+            {/* {previewVisible && (
               <div className="absolute inset-0 bg-white p-4 overflow-auto animate-fade-in z-10">
                 <div className="p-2 bg-gray-100 rounded mb-4 flex justify-between items-center">
                   <span className="text-sm font-medium">Preview</span>
@@ -117,7 +117,7 @@ export default function EditorPage() {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>

@@ -1,15 +1,16 @@
-version: "3.8"
+
 
 services:
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
-      container_name: app-server
+    container_name: app-server
 
-    ports: -"3000:3000"
+    ports:
+      - "3000:3000"
 
-    enviroment:
+    environment:
       - NODE_ENV=production
       - PORT=3000
 
@@ -33,12 +34,12 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
-      container_name: app-client
+    container_name: app-client
 
     ports:
       - "5173:5173"
 
-    enviroment:
+    environment:
       - NODE_ENV=production
       - VITE_API_URL=http://localhost:3000
 
