@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import EditorPage from "./pages/EditorPage";
 import LandingPage from "./pages/LandingPage";
+import { SigninPage } from "./pages/SigninPage";
 
 function App() {
   return (
@@ -9,6 +10,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/editor" element={<EditorPage />} />
+        <Route path="/login" element={<SigninPage />} />
       </Routes>
     </ThemeProvider>
   );
