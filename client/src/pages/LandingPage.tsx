@@ -16,7 +16,8 @@ import {
 import { usePromptStore } from "../store/promptStore";
 import { BACKEND_URL } from "../config";
 import { parseBoltArtifact } from "../ParseResponse";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "../components/ui/button";
 
 export default function LandingPage() {
   const [promptText, setPromptText] = useState("");
@@ -278,7 +279,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <button
+        {/* <button
           onClick={toggleTheme}
           className="p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-300 backdrop-blur-sm border border-white/10 hover:border-white/20"
           aria-label={
@@ -290,7 +291,27 @@ export default function LandingPage() {
           ) : (
             <Moon className="h-5 w-5 text-purple-300" />
           )}
-        </button>
+        </button> */}
+        <div className="flex items-center space-x-3">
+          <Button
+            variant="outline"
+            className="rounded-full bg-transparent font-bold border-white/20"
+          >
+            <Link to="/login">Login</Link>
+          </Button>
+          <Button variant="default" className="rounded-full">
+            <Link to="/signup">Sign up for Free</Link>
+          </Button>
+        </div>
+        {/* <div className="flex items-center space-x-3">
+          <div className="text-black font-bold border border-white rounded-full px-4 py-2 bg-white">
+            Login
+          </div>
+
+          <div className="text-white font-bold border border-white/20 rounded-full px-4 py-2">
+            Sign up for Free
+          </div>
+        </div> */}
       </header>
 
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-20">
@@ -335,20 +356,25 @@ export default function LandingPage() {
             <div className="flex flex-wrap justify-center gap-6 mt-8">
               <div className="flex items-center text-green-400">
                 <div className="w-2 h-2 bg-green-400 rounded-full mr-3 animate-pulse"></div>
-                <span className="text-sm">No coding required</span>
+                <span className="text-sm cursor-pointer">
+                  No coding required
+                </span>
               </div>
               <div className="flex items-center text-blue-400">
                 <div className="w-2 h-2 bg-blue-400 rounded-full mr-3 animate-pulse"></div>
-                <span className="text-sm">Instant deployment</span>
+                <span className="text-sm cursor-pointer">
+                  Instant deployment
+                </span>
               </div>
               <div className="flex items-center text-purple-400">
                 <div className="w-2 h-2 bg-purple-400 rounded-full mr-3 animate-pulse"></div>
-                <span className="text-sm">Professional results</span>
+                <span className="text-sm cursor-pointer">
+                  Professional results
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Interactive Prompt Section */}
           <div
             className="mt-16 max-w-4xl mx-auto"
             style={{

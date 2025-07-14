@@ -49,7 +49,7 @@ export default function Statusbar({ activeFile, currentStep }: StatusbarProps) {
         )}
       </div>
 
-      <div>WebCraft v0.1.0</div>
+      <div>CodeINN v0.1.0</div>
     </div>
   );
 }
