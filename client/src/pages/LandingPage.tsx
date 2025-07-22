@@ -18,6 +18,8 @@ import { BACKEND_URL } from "../config";
 import { parseBoltArtifact } from "../ParseResponse";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
+import { LogInComp, SigninComp } from "../components/auth/LogInComp";
+import { SignUpComp } from "../components/auth/SignUpComp";
 
 export default function LandingPage() {
   const [promptText, setPromptText] = useState("");
@@ -293,7 +295,7 @@ export default function LandingPage() {
           )}
         </button> */}
         <div className="flex items-center space-x-3">
-          <Button
+          {/* <Button
             variant="outline"
             className="rounded-full bg-transparent font-bold border-white/20"
           >
@@ -301,17 +303,10 @@ export default function LandingPage() {
           </Button>
           <Button variant="default" className="rounded-full">
             <Link to="/signup">Sign up for Free</Link>
-          </Button>
+          </Button> */}
+          {/* <LogInComp /> */}
+          <SignUpComp />
         </div>
-        {/* <div className="flex items-center space-x-3">
-          <div className="text-black font-bold border border-white rounded-full px-4 py-2 bg-white">
-            Login
-          </div>
-
-          <div className="text-white font-bold border border-white/20 rounded-full px-4 py-2">
-            Sign up for Free
-          </div>
-        </div> */}
       </header>
 
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-20">
